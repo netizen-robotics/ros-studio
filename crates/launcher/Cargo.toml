@@ -1,0 +1,27 @@
+[package]
+name = "studio-launcher"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+[dependencies]
+studio-network = { path = "../network" }
+eframe = { version = "=0.31.1", default-features = false, features = ["accesskit", "default_fonts", "wgpu", "x11", "wayland"] }
+studio-ui-foundation = { path = "../ui-foundation" }
+studio-app-lifecycle = { path = "../app-lifecycle" }
+serde.workspace = true
+serde_json.workspace = true
+sha2 = "=0.10.9"
+ed25519-dalek = "=2.2.0"
+hex = "=0.4.3"
+reqwest = { version = "=0.12.28", default-features = false, features = ["rustls-tls"] }
+tar = "=0.4.44"
+flate2 = "=1.1.10"
+semver = "=1.0.28"
+
+tokio = { version = "=1.53.3", features = ["rt", "time", "net"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "=0.58.0", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Authorization", "Win32_NetworkManagement_WindowsFirewall", "Win32_System_Com", "Win32_System_Variant", "Win32_System_Threading", "Win32_System_Registry", "Win32_System_Ole", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging", "Win32_Storage_FileSystem"] }
+
+[features]
+store-distribution = ["studio-network/store-distribution"]

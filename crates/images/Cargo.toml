@@ -1,0 +1,9 @@
+[package]
+name = "studio-images"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+[dependencies]
+eframe = { version = "=0.31.1", default-features = false, features = ["accesskit", "default_fonts", "wgpu", "x11", "wayland"] }
+studio-protocol = { path = "../protocol" }
+image = { version = "=0.25.10", default-features = false, features = ["png", "jpeg"] }

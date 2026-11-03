@@ -1,0 +1,95 @@
+name: ROS Studio suite (manual checks)
+on:
+  workflow_dispatch:
+    inputs:
+      package_preview:
+        description: Build experimental ad-hoc macOS ARM64 suite preview
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  macos-arm64:
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      PIXI_CACHE_DIR: ${{ github.workspace }}/.cache/pixi
+      RATTLER_CACHE_DIR: ${{ github.workspace }}/.cache/rattler
+      CARGO_HOME: ${{ github.workspace }}/.cache/cargo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          pixi-version: v0.81.0
+          cache: true
+      - run: pixi install --locked
+      - name: Locked build, tests, formatting and Clippy with evidence
+        run: scripts/dev .pixi/envs/default/bin/python scripts/native.py --label split-applications-ci --profile release
+      - name: Confirm Tools does not depend on the scene renderer
+        shell: bash
+        run: |
+          scripts/dev cargo tree --locked -p studio-tools > artifacts/tools-dependencies.txt
+          if rg 'studio-visualization|studio-backend' artifacts/tools-dependencies.txt; then exit 1; fi
+      - name: Experimental runtime
+        if: inputs.package_preview
+        run: scripts/dev .pixi/envs/default/bin/python scripts/package-macos.py --distro jazzy --profile release --destination artifacts/split-runtime-ci
+      - name: Experimental suite bundle
+        if: inputs.package_preview
+        run: scripts/dev .pixi/envs/default/bin/python scripts/package-suite-macos.py --runtime artifacts/split-runtime-ci --binaries target/release --destination artifacts/split-applications-ci
+      - name: Snapshot evidence
+        if: always()
+        run: scripts/dev .pixi/envs/default/bin/python scripts/snapshot-evidence.py
+      - name: Check evidence index
+        if: always()
+        run: scripts/dev .pixi/envs/default/bin/python scripts/snapshot-evidence.py --check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: split-applications-macos-arm64
+          path: |
+            artifacts/feasibility/
+            artifacts/tools-dependencies.txt
+            artifacts/split-applications-ci/*.dmg
+            artifacts/split-applications-ci/suite-package.json
+            Cargo.lock
+            pixi.lock
+# Prepared only; not dispatched. Preview builds do not establish Store approval
+# or Developer ID/notarization qualification. This workflow never publishes.
+
+  windows-x64:
+    runs-on: windows-2022
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          pixi-version: v0.81.0
+          cache: true
+      - uses: ilammy/msvc-dev-cmd@v1
+      - run: pixi install --locked
+      - name: Build Store suite
+        shell: pwsh
+        run: |
+          New-Item artifacts/feasibility -ItemType Directory -Force | Out-Null
+          pixi run --locked cargo build --locked --release --target x86_64-pc-windows-msvc -p studio-launcher -p studio-tools -p studio-visualizer -p studio-backend --features studio-launcher/store-distribution,studio-tools/store-distribution,studio-visualizer/store-distribution 2>&1 | Tee-Object artifacts/feasibility/windows-suite-build.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Launcher regression checks
+        shell: pwsh
+        run: |
+          New-Item artifacts/feasibility -ItemType Directory -Force | Out-Null
+          pixi run --locked cargo test --locked -p studio-launcher --features store-distribution --all-targets 2>&1 | Tee-Object artifacts/feasibility/windows-suite-tests.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Offline package contracts
+        shell: pwsh
+        run: |
+          New-Item artifacts/feasibility -ItemType Directory -Force | Out-Null
+          pixi run --locked python scripts/test-suite-packaging.py 2>&1 | Tee-Object artifacts/feasibility/windows-suite-packaging.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ros-studio-windows-build-evidence
+          path: |
+            artifacts/feasibility/
+            Cargo.lock
+            pixi.lock

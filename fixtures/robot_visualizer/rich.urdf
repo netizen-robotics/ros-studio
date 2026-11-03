@@ -1,0 +1,7 @@
+<robot name="rich_material_fixture"><link name="base">
+  <visual><geometry><mesh filename="materials/textured.obj"/></geometry></visual>
+  <visual><origin xyz="0 2 0"/><geometry><mesh filename="materials/textured.dae"/></geometry></visual>
+  <visual><origin xyz="2 0 0.5"/><geometry><box size="1 1 1"/></geometry><material><color rgba="1 0.1 0.1 0.5"/></material></visual>
+  <visual><origin xyz="2 2 0.5"/><geometry><cylinder radius="0.4" length="1"/></geometry><material><texture filename="materials/textures/checker.png"/></material></visual>
+  <visual><origin xyz="4 0 0.5"/><geometry><sphere radius="0.5"/></geometry><material><color rgba="0.1 0.7 1 1"/></material></visual>
+</link></robot>

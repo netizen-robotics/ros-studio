@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+cd "$(dirname "$0")/.."
+scripts/dev cmake -S fixtures/feasibility_interfaces -B artifacts/fixture-build -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/artifacts/fixture-install" -DCMAKE_INSTALL_RPATH="$PWD/artifacts/fixture-install/lib;$PWD/.pixi/envs/default/lib" -DPython3_EXECUTABLE="$PWD/.pixi/envs/default/bin/python"
+scripts/dev cmake --build artifacts/fixture-build
+scripts/dev cmake --install artifacts/fixture-build
+exec scripts/dev .pixi/envs/default/bin/python scripts/fix-fixture-rpaths.py

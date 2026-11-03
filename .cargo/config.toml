@@ -1,0 +1,4 @@
+# Bootstrap, Launcher and the helper must start on machines without VC developer
+# tools. ROS DLL dependencies are bundled separately in each app's runtime/bin.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]

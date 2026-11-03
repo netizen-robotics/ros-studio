@@ -1,0 +1,8 @@
+#!/bin/sh
+# Development-only recorder; replaces itself with the actual Rust ROS backend.
+set -eu
+cd "$(dirname "$0")/.."
+# Keep ROS library overrides in the backend process. Exporting this for the
+# macOS UI can replace ImageIO's system PNG dependencies and crash icon setup.
+export DYLD_LIBRARY_PATH="$PWD/.pixi/envs/default/lib"
+exec .pixi/envs/default/bin/python scripts/ui-ros-workflow.py --backend "$@"

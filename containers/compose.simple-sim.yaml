@@ -1,0 +1,30 @@
+name: ros-studio-simple-sim
+x-fixture: &fixture
+  image: ros-studio-simple-sim:jazzy
+  pull_policy: never
+  read_only: true
+  user: '1000:1000'
+  tmpfs: ['/tmp:size=64m,mode=1777']
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  mem_limit: 256m
+  cpus: 1.0
+  stop_grace_period: 10s
+services:
+  simulator:
+    <<: *fixture
+    networks: [fixture]
+    ports: ['127.0.0.1:17877:17877']
+    healthcheck:
+      test: [CMD, /opt/fixture-venv/bin/python, -c, 'import json, urllib.request; s=json.load(urllib.request.urlopen("http://127.0.0.1:17877/snapshot", timeout=2)); assert s["fixture_version"] == 2 and len(s["samples"]) == 8']
+      interval: 3s
+      timeout: 3s
+      retries: 10
+  check:
+    <<: *fixture
+    network_mode: service:simulator
+    profiles: [check]
+    command: [/opt/fixture-venv/bin/python, -u, /opt/studio-sim/check.py]
+networks:
+  fixture:
+    driver: bridge

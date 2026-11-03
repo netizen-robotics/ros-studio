@@ -1,0 +1,9 @@
+# Original synthetic diffuse materials, no external resources.
+newmtl coral
+Kd 0.95 0.2 0.12
+Ka 0 0 0
+Ks 0 0 0
+illum 1
+newmtl teal
+Kd 0.05 0.75 0.65
+illum 1

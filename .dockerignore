@@ -1,0 +1,9 @@
+**
+!scripts/
+!scripts/smoke.py
+!containers/
+!containers/Dockerfile.peer
+!containers/Dockerfile.simple-sim
+!fixtures/
+!fixtures/simple_sim/
+!fixtures/simple_sim/*.py

@@ -1,0 +1,24 @@
+[package]
+name = "studio-ui-foundation"
+version.workspace = true
+edition.workspace = true
+license = "MIT AND OFL-1.1"
+[dependencies]
+eframe = { version = "=0.31.1", default-features = false, features = ["accesskit", "default_fonts", "wgpu", "x11", "wayland"] }
+studio-protocol = { path = "../protocol" }
+studio-workspace = { path = "../workspace" }
+
+serde_json.workspace = true
+fontdb = { version = "=0.23.0", default-features = false, features = ["fs", "fontconfig"] }
+ab_glyph = "=0.2.32"
+
+[target.'cfg(unix)'.dependencies]
+libc = "=0.2.190"
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "=0.5.3"
+objc2-foundation = { version = "=0.2.2", features = ["NSString", "NSURL", "NSThread"] }
+objc2-app-kit = { version = "=0.2.2", features = ["NSApplication", "NSOpenPanel", "NSSavePanel", "NSPanel", "NSResponder", "NSWindow", "NSEvent", "NSMenu", "NSMenuItem", "block2"] }
+block2 = "=0.5.1"
+
+[dev-dependencies]
+serde_json.workspace = true

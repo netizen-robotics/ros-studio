@@ -1,0 +1,18 @@
+bool enabled
+int8 small
+uint64 large
+float32 weight
+string<=12 title
+int16[<=4] values
+bool[2] flags
+string[] tags
+---
+bool enabled
+int8 small
+uint64 large
+float32 weight
+Entry summary
+Entry[] entries
+int16[] values
+bool[2] flags
+string[] tags

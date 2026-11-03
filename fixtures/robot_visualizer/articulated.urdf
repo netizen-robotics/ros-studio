@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<robot name="original_fixture_robot">
+  <material name="red"><color rgba="0.9 0.15 0.1 1"/></material>
+  <material name="green"><color rgba="0.15 0.8 0.25 1"/></material>
+  <material name="magenta"><color rgba="0.8 0.15 0.7 1"/></material>
+  <link name="base">
+    <visual><origin xyz="0 0 0.1"/><geometry><box size="0.6 0.4 0.2"/></geometry><material name="red"/></visual>
+    <visual><geometry><sphere radius="0.05"/></geometry><material><color rgba="1 1 1 0"/></material></visual>
+  </link>
+  <link name="arm">
+    <visual><origin xyz="0 0 0.3"/><geometry><cylinder radius="0.08" length="0.6"/></geometry><material name="green"/></visual>
+  </link>
+  <link name="tip">
+    <visual><origin xyz="0 0 0.05"/><geometry><sphere radius="0.12"/></geometry><material><color rgba="0.1 0.3 0.95 1"/></material></visual>
+  </link>
+  <link name="ascii_mesh">
+    <visual><origin xyz="0.2 0 0" rpy="0 0 1.5707963267948966"/><geometry><mesh filename="meshes/wedge-ascii.stl" scale="2 1 0.5"/></geometry><material name="magenta"/></visual>
+  </link>
+  <link name="binary_mesh">
+    <visual><origin xyz="0 -0.4 0.2"/><geometry><mesh filename="package://fixture_robot/meshes/wedge-binary.stl" scale="0.3 0.3 0.3"/></geometry><material><color rgba="0.95 0.8 0.1 1"/></material></visual>
+  </link>
+  <joint name="shoulder" type="revolute"><parent link="base"/><child link="arm"/><origin xyz="0 0 0.2"/><axis xyz="0 1 0"/><limit lower="-1.5" upper="1.5" effort="1" velocity="1"/></joint>
+  <joint name="tool" type="fixed"><parent link="arm"/><child link="tip"/><origin xyz="0 0 0.6"/></joint>
+  <joint name="ascii_mount" type="fixed"><parent link="base"/><child link="ascii_mesh"/></joint>
+  <joint name="binary_mount" type="fixed"><parent link="base"/><child link="binary_mesh"/></joint>
+</robot>

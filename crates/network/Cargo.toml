@@ -1,0 +1,19 @@
+[package]
+name = "studio-network"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+studio-app-lifecycle = { path = "../app-lifecycle" }
+[target.'cfg(unix)'.dependencies]
+libc = "=0.2.190"
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_NetworkManagement_Ndis", "Win32_Networking_WinSock"] }
+windows = { version = "=0.58.0", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Authorization", "Win32_Security_Cryptography", "Win32_Security_Cryptography_Catalog", "Win32_Security_Cryptography_Sip", "Win32_Security_WinTrust", "Win32_NetworkManagement_WindowsFirewall", "Win32_System_Com", "Win32_System_Ole", "Win32_System_Variant", "Win32_System_Registry", "Win32_System_Threading", "Win32_System_SystemInformation", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging", "Wdk_System_SystemServices"] }
+sha2 = "=0.10.9"
+hex = "=0.4.3"
+
+[features]
+store-distribution = []

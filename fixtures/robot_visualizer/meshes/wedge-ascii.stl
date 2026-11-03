@@ -1,0 +1,9 @@
+solid original_wedge
+  facet normal 0 -0.7071067811865475 0.7071067811865475
+    outer loop
+      vertex 0 0 0
+      vertex 1 0 0
+      vertex 0 1 1
+    endloop
+  endfacet
+endsolid original_wedge

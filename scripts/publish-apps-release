@@ -1,0 +1,5 @@
+#!/bin/sh
+# Retired per-application publication entry point. Never uploads anything.
+set -eu
+echo 'Retired: ROS Studio ships as one product. Use the reviewed Store submission or signed macOS suite release process.' >&2
+exit 2

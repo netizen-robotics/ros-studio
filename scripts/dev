@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+cd "$(dirname "$0")/.."
+export PIXI_CACHE_DIR="$PWD/.cache/pixi"
+export RATTLER_CACHE_DIR="$PWD/.cache/rattler"
+export CARGO_HOME="$PWD/.cache/cargo"
+export ROS_LOG_DIR="$PWD/artifacts/ros-logs"
+export RCUTILS_LOGGING_USE_STDOUT=0
+export ROS_DISTRO=jazzy
+export RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}"
+export AMENT_PREFIX_PATH="$PWD/.pixi/envs/default"
+export CMAKE_PREFIX_PATH="$AMENT_PREFIX_PATH"
+export LIBCLANG_PATH="$AMENT_PREFIX_PATH/lib"
+exec pixi run --locked "$@"

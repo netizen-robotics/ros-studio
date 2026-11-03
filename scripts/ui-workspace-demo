@@ -1,0 +1,12 @@
+#!/bin/sh
+# Development-only protocol fixture; no ROS/network traffic.
+# As STUDIO_BACKEND, forwards --observe-session or explicit legacy arguments.
+# --launch [desktop args...] starts the desktop with this script as its backend.
+set -eu
+cd "$(dirname "$0")/.."
+if [ "${1-}" = "--launch" ]; then
+    shift
+    export STUDIO_BACKEND="$PWD/scripts/ui-workspace-demo"
+    exec scripts/dev cargo run --locked -p studio-desktop -- "$@"
+fi
+exec .pixi/envs/default/bin/python scripts/ui-workspace-fixture.py "$@"

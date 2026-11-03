@@ -1,0 +1,16 @@
+[workspace]
+name = "ros-studio-humble-feasibility"
+channels = ["robostack-humble", "conda-forge"]
+platforms = ["osx-arm64"]
+
+[dependencies]
+rust = "=1.92.0"
+ros-humble-ros-base = "=0.10.0"
+ros-humble-rmw-fastrtps-cpp = "*"
+ros-humble-rmw-cyclonedds-cpp = "*"
+ros-humble-example-interfaces = "*"
+ros-humble-sensor-msgs = "*"
+ros-humble-tf2-msgs = "*"
+libclang = "*"
+cmake = "*"
+ninja = "*"

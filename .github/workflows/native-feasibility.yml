@@ -1,0 +1,78 @@
+name: Native feasibility (prepared only)
+on:
+  workflow_dispatch:
+    inputs:
+      macos_fixtures:
+        description: Run synthetic service/action suites on macOS ARM64
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  build:
+    env:
+      PIXI_CACHE_DIR: ${{ github.workspace }}/.cache/pixi
+      RATTLER_CACHE_DIR: ${{ github.workspace }}/.cache/rattler
+      CARGO_HOME: ${{ github.workspace }}/.cache/cargo
+      ROS_DISTRO: ${{ matrix.distro }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-24.04, distro: jazzy, manifest: pixi.toml}
+          - {os: ubuntu-24.04-arm, distro: jazzy, manifest: pixi.toml}
+          - {os: macos-15-intel, distro: jazzy, manifest: pixi.toml}
+          - {os: macos-15, distro: jazzy, manifest: pixi.toml, fixtures: true}
+          - {os: windows-2022, distro: jazzy, manifest: pixi.toml}
+          - {os: macos-15, distro: humble, manifest: environments/humble/pixi.toml, fixtures: true}
+          - {os: macos-15, distro: lyrical, manifest: environments/lyrical/pixi.toml, fixtures: true}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Linux desktop development libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libwayland-dev libx11-dev libxi-dev libxcursor-dev libxrandr-dev
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          pixi-version: v0.81.0
+          cache: true
+      - name: Locked dependency installation
+        run: pixi install --locked --manifest-path ${{ matrix.manifest }}
+      - name: Check local evidence index (if present)
+        run: pixi run --locked --manifest-path ${{ matrix.manifest }} python scripts/snapshot-evidence.py --check
+      - name: Native workspace build and unit tests
+        run: pixi run --locked --manifest-path ${{ matrix.manifest }} python scripts/native.py --distro ${{ matrix.distro }} --label ci-native-${{ matrix.distro }}
+      - name: Synthetic custom services (macOS ARM64 only)
+        if: inputs.macos_fixtures && matrix.fixtures
+        run: pixi run --locked --manifest-path ${{ matrix.manifest }} python scripts/service-feasibility.py --distro ${{ matrix.distro }} --label ci-services
+      - name: Synthetic custom actions (macOS ARM64 only)
+        if: inputs.macos_fixtures && matrix.fixtures
+        run: pixi run --locked --manifest-path ${{ matrix.manifest }} python scripts/action-feasibility.py --distro ${{ matrix.distro }} --label ci-actions
+      - name: Synthetic action lifecycle (macOS ARM64 only)
+        if: inputs.macos_fixtures && matrix.fixtures
+        run: pixi run --locked --manifest-path ${{ matrix.manifest }} python scripts/action-lifecycle-feasibility.py --distro ${{ matrix.distro }} --label ci-lifecycle
+      - name: Generate local evidence index
+        if: always()
+        run: pixi run --locked --manifest-path ${{ matrix.manifest }} python scripts/snapshot-evidence.py
+      - name: Validate local evidence index
+        if: always()
+        run: pixi run --locked --manifest-path ${{ matrix.manifest }} python scripts/snapshot-evidence.py --check
+      - name: Upload logs and lockfiles
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.os }}-${{ matrix.distro }}
+          path: |
+            pixi.lock
+            environments/humble/pixi.lock
+            environments/lyrical/pixi.lock
+            Cargo.lock
+            artifacts/ros-logs
+            artifacts/feasibility
+# These jobs prove only native compilation and unit tests on the actual runner.
+# Manual dispatch only: CI remains prepared, not authorized for remote execution.
+# windows-2022 is a build runner, not Windows 11 acceptance evidence.
+# They do not qualify clean installs, LAN behavior, UI rendering, or the full LTS matrix.
+# Humble/Lyrical locks currently cover macOS ARM64 only; other targets remain unprepared.
+# Optional fixture jobs use development environments, not packaged or clean-host clients.

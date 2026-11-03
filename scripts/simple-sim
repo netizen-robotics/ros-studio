@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+cd "$(dirname "$0")/.."
+case "${1:-}" in
+  build)
+    expected='sha256:c5df45627749314f2c4ce4c84a943bae20f49cd80955a92614fb5b952dc9d460'
+    actual=$(docker image inspect ros-studio-peer:jazzy --format '{{.Id}}')
+    if [ "$actual" != "$expected" ]; then
+      echo "Fixture base mismatch: expected $expected, found $actual" >&2
+      exit 1
+    fi
+    export BUILDX_CONFIG="$PWD/.cache/buildx"
+    exec docker build --pull=false -f containers/Dockerfile.simple-sim -t ros-studio-simple-sim:jazzy . ;;
+  up) exec docker compose -f containers/compose.simple-sim.yaml up -d --wait --wait-timeout 40 simulator ;;
+  check) exec docker compose -f containers/compose.simple-sim.yaml --profile check run --rm check ;;
+  logs) exec docker compose -f containers/compose.simple-sim.yaml logs simulator ;;
+  stop) exec docker compose -f containers/compose.simple-sim.yaml down ;;
+  *) echo 'Usage: scripts/simple-sim {build|up|check|logs|stop}' >&2; exit 2 ;;
+esac

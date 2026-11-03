@@ -1,0 +1,8 @@
+# build-docker-peer verifies this local tag against the recorded image digest.
+FROM ros-studio-base:jazzy-locked
+RUN apt-get update && apt-get install -y --no-install-recommends python3-venv ros-jazzy-rmw-cyclonedds-cpp && rm -rf /var/lib/apt/lists/*
+RUN python3 -m venv --system-site-packages /opt/fixture-venv
+COPY scripts/smoke.py /opt/fixture/smoke.py
+RUN dpkg-query -W > /opt/fixture/packages.txt
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/opt/fixture-venv/bin/python", "/opt/fixture/smoke.py", "--peer"]

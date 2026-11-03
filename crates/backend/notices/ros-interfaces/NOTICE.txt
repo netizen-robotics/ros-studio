@@ -1,0 +1,19 @@
+ROS interface support added for generic Nav2 action inspection
+
+nav2_msgs
+  Upstream: https://github.com/ros-navigation/navigation2/tree/jazzy/nav2_msgs
+  License: Apache-2.0, as declared in the upstream package.xml.
+  License text: Apache-2.0.txt
+
+geographic_msgs
+  Upstream: https://github.com/ros-geographic-info/geographic_info
+  License: BSD-3-Clause, as identified by the locked native package metadata;
+  the upstream package.xml uses the name BSD.
+  License terms: BSD-3-Clause.txt
+
+The runtime also retains each package's original package.xml and interface
+definitions, and its native package metadata. Exact package versions and source
+identities are recorded by pixi.lock and the packaged runtime manifest.
+
+These notices cover the added interfaces only. They do not replace the complete
+dependency notice review required before public distribution of ROS Studio.

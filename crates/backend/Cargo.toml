@@ -1,0 +1,15 @@
+[package]
+name = "studio-backend"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+[dependencies]
+rclrs = "=0.8.0"
+studio-protocol = { path = "../protocol" }
+serde_json.workspace = true
+serde.workspace = true
+sha2 = "=0.10.9"
+uuid = { version = "=1.28.0", features = ["v4"] }
+
+[build-dependencies]
+cc = "=1.8.0"

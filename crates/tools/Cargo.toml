@@ -1,0 +1,35 @@
+[package]
+name = "studio-tools"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+[dependencies]
+studio-network = { path = "../network" }
+studio-app-lifecycle = { path = "../app-lifecycle" }
+eframe = { version = "=0.31.1", default-features = false, features = ["accesskit", "default_fonts", "wgpu", "x11", "wayland"] }
+studio-protocol = { path = "../protocol" }
+studio-images = { path = "../images" }
+studio-inspection = { path = "../inspection" }
+studio-workspace = { path = "../workspace" }
+studio-ui-foundation = { path = "../ui-foundation" }
+studio-client-core = { path = "../client-core" }
+serde.workspace = true
+serde_json.workspace = true
+[target.'cfg(unix)'.dependencies]
+libc = "=0.2.190"
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "=0.5.3"
+objc2-foundation = { version = "=0.2.2", features = ["NSString", "NSURL", "NSThread"] }
+objc2-app-kit = { version = "=0.2.2", features = ["NSApplication", "NSOpenPanel", "NSSavePanel", "NSPanel", "NSResponder", "NSWindow", "NSEvent", "NSMenu", "NSMenuItem", "block2"] }
+block2 = "=0.5.1"
+
+[dependencies.serde_yaml]
+package = "serde_yaml_ng"
+version = "=0.10.0"
+
+[dev-dependencies.studio-client-core]
+path = "../client-core"
+features = ["test-support"]
+
+[features]
+store-distribution = ["studio-network/store-distribution"]

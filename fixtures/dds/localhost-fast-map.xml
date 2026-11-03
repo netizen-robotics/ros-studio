@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dds><profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+  <transport_descriptors><transport_descriptor>
+    <transport_id>studio_fixture_map_shm</transport_id><type>SHM</type>
+    <segment_size>16777216</segment_size>
+  </transport_descriptor></transport_descriptors>
+  <participant profile_name="studio_fixture_map" is_default_profile="true"><rtps>
+    <userTransports><transport_id>studio_fixture_map_shm</transport_id></userTransports>
+  </rtps></participant>
+</profiles></dds>

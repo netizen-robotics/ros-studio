@@ -1,0 +1,23 @@
+.pixi/
+.cache/
+target/
+artifacts/
+.DS_Store
+__pycache__/
+*.pyc
+
+# Local credentials, signing material and ROS recordings must stay private.
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+*.bag
+*.db3
+*.mcap
+*.bundle

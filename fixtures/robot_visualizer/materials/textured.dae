@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset><unit name="millimeter" meter="0.001"/><up_axis>Y_UP</up_axis></asset>
+  <library_images><image id="checkerImage"><init_from>textures/checker.png</init_from></image></library_images><library_effects>
+    <effect id="coralEffect"><profile_COMMON><newparam sid="checkerSurface"><surface type="2D"><init_from>checkerImage</init_from></surface></newparam><newparam sid="checkerSampler"><sampler2D><source>checkerSurface</source><wrap_s>WRAP</wrap_s><wrap_t>WRAP</wrap_t><minfilter>LINEAR</minfilter><magfilter>LINEAR</magfilter></sampler2D></newparam><technique sid="common"><lambert><diffuse><texture texture="checkerSampler" texcoord="UVMap"/></diffuse></lambert></technique></profile_COMMON></effect>
+    <effect id="tealEffect"><profile_COMMON><technique sid="common"><phong><diffuse><color>0.05 0.75 0.65 1</color></diffuse><shininess><float>1</float></shininess></phong></technique></profile_COMMON></effect>
+  </library_effects>
+  <library_materials>
+    <material id="coral"><instance_effect url="#coralEffect"/></material>
+    <material id="teal"><instance_effect url="#tealEffect"/></material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="panel"><mesh>
+      <source id="positions"><float_array id="positionsArray" count="17">99 0 0 0 7 1000 0 0 7 1000 500 0 7 0 500 0 7</float_array><technique_common><accessor source="#positionsArray" count="4" stride="4" offset="1"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/><param type="float"/></accessor></technique_common></source>
+      <source id="normals"><float_array id="normalsArray" count="3">0 0 1</float_array><technique_common><accessor source="#normalsArray" count="1" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source>
+      <source id="uv"><float_array id="uvArray" count="8">0 0 1 0 1 1 0 1</float_array><technique_common><accessor source="#uvArray" count="4" stride="2"><param name="S" type="float"/><param name="T" type="float"/></accessor></technique_common></source>
+      <vertices id="panelVertices"><input semantic="POSITION" source="#positions"/></vertices>
+      <polylist count="1" material="body"><input semantic="VERTEX" source="#panelVertices" offset="0"/><input semantic="NORMAL" source="#normals" offset="1"/><input semantic="TEXCOORD" source="#uv" offset="2" set="0"/><vcount>4</vcount><p>0 0 0 1 0 1 2 0 2 3 0 3</p></polylist>
+    </mesh></geometry>
+  </library_geometries>
+  <library_nodes>
+    <node id="reusable"><instance_geometry url="#panel"><bind_material><technique_common><instance_material symbol="body" target="#teal"/></technique_common></bind_material></instance_geometry></node>
+  </library_nodes>
+  <library_visual_scenes><visual_scene id="main">
+    <node id="scaled"><translate>1000 0 250</translate><rotate>0 0 1 90</rotate><scale>2 1 1</scale><instance_geometry url="#panel"><bind_material><technique_common><instance_material symbol="body" target="#coral"><bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/></instance_material></technique_common></bind_material></instance_geometry></node>
+    <node id="copy"><matrix>1 0 0 -1000 0 1 0 0 0 0 1 0 0 0 0 1</matrix><instance_node url="#reusable"/></node>
+  </visual_scene></library_visual_scenes>
+  <scene><instance_visual_scene url="#main"/></scene>
+</COLLADA>

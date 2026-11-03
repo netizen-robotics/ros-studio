@@ -1,0 +1,8 @@
+<robot name="obj_material_panels">
+  <link name="base">
+    <visual>
+      <origin xyz="0 0 0.3" rpy="0 0 0"/>
+      <geometry><mesh filename="materials/panels.obj" scale="1 1 1"/></geometry>
+    </visual>
+  </link>
+</robot>

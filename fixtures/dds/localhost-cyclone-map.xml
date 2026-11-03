@@ -1,0 +1,3 @@
+<CycloneDDS xmlns="https://cdds.io/config"><Domain id="any">
+  <General><Interfaces><NetworkInterface address="127.0.0.1"/></Interfaces></General>
+</Domain></CycloneDDS>

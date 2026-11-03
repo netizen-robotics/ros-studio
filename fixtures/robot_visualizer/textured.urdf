@@ -1,0 +1,4 @@
+<robot name="texture_fixture"><link name="base">
+  <visual><geometry><mesh filename="materials/textured.obj"/></geometry></visual>
+  <visual><origin xyz="2 0 0"/><geometry><mesh filename="materials/textured.obj"/></geometry></visual>
+</link></robot>

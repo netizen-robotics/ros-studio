@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+cd "$(dirname "$0")/.."
+base='ros:jazzy-ros-base-noble'
+expected='sha256:066420e07f60aa18262f2479981def87ebcfcec42eefb0c0c57c4a46098348ca'
+actual=$(docker image inspect "$base" --format '{{.Id}}')
+if [ "$actual" != "$expected" ]; then
+  echo "Base image mismatch: expected $expected, found $actual" >&2
+  exit 1
+fi
+docker tag "$base" ros-studio-base:jazzy-locked
+export BUILDX_CONFIG="$PWD/.cache/buildx"
+exec docker build --pull=false -f containers/Dockerfile.peer -t ros-studio-peer:jazzy .
