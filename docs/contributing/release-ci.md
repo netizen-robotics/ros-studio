@@ -4,6 +4,11 @@ Use **Actions → Release candidate → Run workflow** on the reviewed source re
 This workflow produces downloadable Actions artifacts; it does not publish a
 GitHub Release or submit an application to either store.
 
+For build-only checks, use **Suite CI (Windows, macOS, Ubuntu)**. Its `platform`
+selector defaults to `all`; select one platform for a focused repair/retest.
+The suite workflow and release-candidate workflow are manual, not push/PR checks.
+Ubuntu is also available independently through the `ubuntu-check` channel below.
+
 ## Channels
 
 | Channel | Output | Required environment |

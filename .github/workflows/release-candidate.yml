@@ -1,4 +1,5 @@
 name: Release candidate
+run-name: Release candidate — ${{ inputs.channel }}
 on:
   workflow_dispatch:
     inputs:
