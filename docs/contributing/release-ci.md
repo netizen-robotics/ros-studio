@@ -17,12 +17,35 @@ Ubuntu is also available independently through the `ubuntu-check` channel below.
 | `macos-dmg` | Developer ID signed and notarized ARM64 DMG | `macos-dmg` |
 | `microsoft-store` | Unsigned x64 MSIX for Partner Center submission | `microsoft-store` |
 | `ubuntu-check` | Ubuntu 24.04 x64 build, unit-test, formatting and Clippy evidence | None |
+| `ubuntu-deb` | Experimental Ubuntu 24.04 amd64 DEB and install-test evidence | None |
 
-The Ubuntu channel uses the locked Jazzy Pixi environment on a native Linux
+The Ubuntu channels use the locked Jazzy Pixi environment on a native Linux
 runner. It does not require Apple or Microsoft credentials. Logs and dependency
-records are retained even when checks fail. This channel does not yet create a
-DEB, AppImage or standalone runtime bundle; it does not qualify installed UI,
-LAN behavior or Ubuntu ARM64 support.
+records are retained even when checks fail. `ubuntu-check` produces evidence only.
+`ubuntu-deb` bundles the Launcher, Tools, Visualizer and private Jazzy runtime
+under `/opt/ros-studio`. It checks ELF dependencies and install, configuration,
+reinstall and purge in a clean Ubuntu container before uploading the DEB.
+These checks do not qualify graphical UI, LAN behavior or Ubuntu ARM64 support.
+
+## Download and install the Ubuntu preview
+
+Run the `ubuntu-deb` channel. After a successful run, download and extract the
+`ros-studio-ubuntu-deb-<commit>` artifact from the run's Summary page. It contains
+the DEB and `suite-package.json` with its SHA256. Artifacts are retained for 14 days.
+On Ubuntu 24.04 amd64, in the extracted directory:
+
+```sh
+sudo apt install ./ros-studio_*_amd64.deb
+ros-studio
+```
+
+The desktop application menu also contains **ROS Studio**. The commands
+`ros-studio-tools` and `ros-studio-visualizer` open individual suite processes.
+Users do not need Pixi, ROS setup scripts or compiler tools. Remove the package
+with `sudo apt remove ros-studio`; user data is preserved. This is an unsigned
+experimental download, without an APT repository or automatic package updates.
+Complete dependency license review and native desktop/ROS acceptance remain
+required before a public production release.
 
 Preview packages do not establish public distribution readiness. The Microsoft
 Store signs the MSIX after certification; the unsigned artifact is not a direct

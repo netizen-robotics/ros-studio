@@ -12,6 +12,15 @@ Keep the MIT license and reviewed dependency notices with every distribution.
 
 For hosted candidate builds and signing inputs, see [GitHub release candidates](release-ci.md).
 
+## Ubuntu 24.04 amd64 — experimental DEB
+
+Use the `ubuntu-deb` GitHub Actions channel described in
+[release candidates](release-ci.md#download-and-install-the-ubuntu-preview).
+It builds one package containing the suite and its private ROS runtime, with a
+desktop launcher and commands under `/usr/bin`. Clean-container install checks
+are required before uploading the DEB; graphical desktop and ROS networking
+acceptance remain separate. This preview is not a qualified production release.
+
 ## macOS Apple Silicon
 
 Build Launcher, Tools, Visualizer and the ROS backend from the same locked
