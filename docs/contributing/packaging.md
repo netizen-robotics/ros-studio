@@ -10,6 +10,8 @@ Packaging does not establish Store approval, signing, clean-machine execution,
 LAN behavior or public release qualification. Current packages remain previews.
 Keep the MIT license and reviewed dependency notices with every distribution.
 
+For hosted candidate builds and signing inputs, see [GitHub release candidates](release-ci.md).
+
 ## macOS Apple Silicon
 
 Build Launcher, Tools, Visualizer and the ROS backend from the same locked

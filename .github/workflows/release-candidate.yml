@@ -1,0 +1,126 @@
+name: Release candidate
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Candidate channel (does not publish a release)
+        type: choice
+        required: true
+        default: macos-preview
+        options:
+          - macos-preview
+          - macos-dmg
+          - microsoft-store
+permissions:
+  contents: read
+concurrency:
+  group: release-candidate-${{ inputs.channel }}
+  cancel-in-progress: false
+jobs:
+  candidate:
+    runs-on: ${{ inputs.channel == 'microsoft-store' && 'windows-2022' || 'macos-15' }}
+    environment: ${{ inputs.channel }}
+    timeout-minutes: 120
+    env:
+      PIXI_CACHE_DIR: ${{ github.workspace }}/.cache/pixi
+      RATTLER_CACHE_DIR: ${{ github.workspace }}/.cache/rattler
+      CARGO_HOME: ${{ github.workspace }}/.cache/cargo
+      STUDIO_RELEASE_NOTICES: ${{ vars.STUDIO_RELEASE_NOTICES }}
+      STUDIO_RELEASE_NOTICES_SHA256: ${{ vars.STUDIO_RELEASE_NOTICES_SHA256 }}
+      STUDIO_MACOS_SIGN_IDENTITY: ${{ vars.STUDIO_MACOS_SIGN_IDENTITY }}
+      STUDIO_MSIX_IDENTITY_NAME: ${{ vars.STUDIO_MSIX_IDENTITY_NAME }}
+      STUDIO_MSIX_PUBLISHER: ${{ vars.STUDIO_MSIX_PUBLISHER }}
+      STUDIO_MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.STUDIO_MSIX_PUBLISHER_DISPLAY_NAME }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          pixi-version: v0.81.0
+          cache: false
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+      - name: Check release inputs
+        env:
+          RELEASE_CHANNEL: ${{ inputs.channel }}
+          APPLE_DEVELOPER_ID_P12_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_P12_BASE64 }}
+          APPLE_DEVELOPER_ID_P12_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}
+          APPLE_API_PRIVATE_KEY: ${{ secrets.APPLE_API_PRIVATE_KEY }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+        shell: bash
+        run: pixi run --locked python scripts/release-preflight.py "$RELEASE_CHANNEL"
+      - name: Offline packaging regression checks
+        run: pixi run --locked python scripts/test-suite-packaging.py
+      - name: Release input regression checks
+        run: pixi run --locked python scripts/test-release-preflight.py
+      - name: macOS build, tests, format and Clippy
+        if: runner.os == 'macOS'
+        run: scripts/dev .pixi/envs/default/bin/python scripts/native.py --label release-candidate --profile release
+      - name: Windows Store build and tests
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item artifacts/feasibility -ItemType Directory -Force | Out-Null
+          $env:ROS_DISTRO = 'jazzy'
+          $env:AMENT_PREFIX_PATH = "$PWD/.pixi/envs/default/Library"
+          $env:CMAKE_PREFIX_PATH = $env:AMENT_PREFIX_PATH
+          $env:LIBCLANG_PATH = "$env:AMENT_PREFIX_PATH/bin"
+          pixi run --locked cargo build --locked --release --target x86_64-pc-windows-msvc -p studio-launcher -p studio-tools -p studio-visualizer -p studio-backend --features studio-launcher/store-distribution,studio-tools/store-distribution,studio-visualizer/store-distribution 2>&1 | Tee-Object artifacts/feasibility/windows-release-build.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pixi run --locked cargo test --locked --target x86_64-pc-windows-msvc -p studio-launcher --features store-distribution --all-targets 2>&1 | Tee-Object artifacts/feasibility/windows-release-tests.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Relocate macOS runtime
+        if: runner.os == 'macOS'
+        run: scripts/dev .pixi/envs/default/bin/python scripts/package-macos.py --distro jazzy --profile release --destination artifacts/release-runtime
+      - name: Prepare ephemeral signing keychain
+        if: inputs.channel == 'macos-dmg'
+        env:
+          APPLE_DEVELOPER_ID_P12_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_P12_BASE64 }}
+          APPLE_DEVELOPER_ID_P12_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}
+          APPLE_API_PRIVATE_KEY: ${{ secrets.APPLE_API_PRIVATE_KEY }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+        run: bash scripts/ci-macos-signing.sh
+      - name: Assemble macOS candidate
+        if: runner.os == 'macOS'
+        env:
+          RELEASE_CHANNEL: ${{ inputs.channel }}
+        shell: bash
+        run: |
+          args=()
+          if [[ "$RELEASE_CHANNEL" == macos-dmg ]]; then
+            args+=(--sign-identity "$STUDIO_MACOS_SIGN_IDENTITY" --notary-profile ros-studio-ci --notices "$STUDIO_RELEASE_NOTICES")
+          fi
+          scripts/dev .pixi/envs/default/bin/python scripts/package-suite-macos.py --runtime artifacts/release-runtime --binaries target/release --destination artifacts/release-candidate "${args[@]}"
+      - name: Assemble Microsoft Store submission candidate
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $sdk = Get-ChildItem "${env:ProgramFiles(x86)}/Windows Kits/10/bin/*/x64/makeappx.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+          if (!$sdk) { throw 'Windows SDK MakeAppx is missing' }
+          pixi run --locked python scripts/package-suite-windows.py --runtime .pixi/envs/default/Library --binaries target/x86_64-pc-windows-msvc/release --destination artifacts/release-candidate --notices "$env:STUDIO_RELEASE_NOTICES" --makeappx "$($sdk.FullName)" --identity-name "$env:STUDIO_MSIX_IDENTITY_NAME" --publisher "$env:STUDIO_MSIX_PUBLISHER" --publisher-display-name "$env:STUDIO_MSIX_PUBLISHER_DISPLAY_NAME"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Remove ephemeral signing credentials
+        if: always() && inputs.channel == 'macos-dmg'
+        run: bash scripts/ci-macos-signing.sh cleanup
+      - name: Index evidence
+        if: always()
+        run: pixi run --locked python scripts/snapshot-evidence.py
+      - name: Check evidence
+        if: always()
+        run: pixi run --locked python scripts/snapshot-evidence.py --check
+      - name: Retain candidate and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ros-studio-${{ inputs.channel }}-${{ github.sha }}
+          retention-days: 14
+          path: |
+            artifacts/release-candidate/*.dmg
+            artifacts/release-candidate/*.msix
+            artifacts/release-candidate/suite-package.json
+            artifacts/feasibility/
+            Cargo.lock
+            pixi.lock
+# Mac App Store is intentionally unavailable until sandboxed suite acceptance
+# and Store packaging exist. A Developer ID DMG is not a Mac App Store upload.
