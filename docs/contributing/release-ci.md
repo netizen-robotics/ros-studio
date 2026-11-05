@@ -11,6 +11,13 @@ GitHub Release or submit an application to either store.
 | `macos-preview` | Ad-hoc ARM64 DMG for development evaluation | None |
 | `macos-dmg` | Developer ID signed and notarized ARM64 DMG | `macos-dmg` |
 | `microsoft-store` | Unsigned x64 MSIX for Partner Center submission | `microsoft-store` |
+| `ubuntu-check` | Ubuntu 24.04 x64 build, unit-test, formatting and Clippy evidence | None |
+
+The Ubuntu channel uses the locked Jazzy Pixi environment on a native Linux
+runner. It does not require Apple or Microsoft credentials. Logs and dependency
+records are retained even when checks fail. This channel does not yet create a
+DEB, AppImage or standalone runtime bundle; it does not qualify installed UI,
+LAN behavior or Ubuntu ARM64 support.
 
 Preview packages do not establish public distribution readiness. The Microsoft
 Store signs the MSIX after certification; the unsigned artifact is not a direct

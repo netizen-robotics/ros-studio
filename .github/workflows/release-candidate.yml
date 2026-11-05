@@ -11,13 +11,54 @@ on:
           - macos-preview
           - macos-dmg
           - microsoft-store
+          - ubuntu-check
 permissions:
   contents: read
 concurrency:
   group: release-candidate-${{ inputs.channel }}
   cancel-in-progress: false
 jobs:
+  ubuntu:
+    if: inputs.channel == 'ubuntu-check'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      PIXI_CACHE_DIR: ${{ github.workspace }}/.cache/pixi
+      RATTLER_CACHE_DIR: ${{ github.workspace }}/.cache/rattler
+      CARGO_HOME: ${{ github.workspace }}/.cache/cargo
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install desktop build dependencies
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libwayland-dev libx11-dev libxi-dev libxcursor-dev libxrandr-dev
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          pixi-version: v0.81.0
+          cache: false
+      - name: Ubuntu build, tests, formatting and Clippy
+        run: scripts/dev .pixi/envs/default/bin/python scripts/native.py --label release-ubuntu --profile release
+      - name: Offline packaging regressions
+        run: scripts/dev .pixi/envs/default/bin/python scripts/test-suite-packaging.py
+      - name: Release input regressions
+        run: scripts/dev .pixi/envs/default/bin/python scripts/test-release-preflight.py
+      - name: Index evidence
+        if: always()
+        run: scripts/dev .pixi/envs/default/bin/python scripts/snapshot-evidence.py
+      - name: Check evidence
+        if: always()
+        run: scripts/dev .pixi/envs/default/bin/python scripts/snapshot-evidence.py --check
+      - name: Retain Ubuntu evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ros-studio-ubuntu-24.04-x64-${{ github.sha }}
+          retention-days: 14
+          path: |
+            artifacts/feasibility/
+            Cargo.lock
+            pixi.lock
+    # Build/static/unit evidence only; no .deb/AppImage or installed UI acceptance.
   candidate:
+    if: inputs.channel != 'ubuntu-check'
     runs-on: ${{ inputs.channel == 'microsoft-store' && 'windows-2022' || 'macos-15' }}
     environment: ${{ inputs.channel }}
     timeout-minutes: 120
