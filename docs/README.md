@@ -4,6 +4,9 @@ Use these guides to build ROS Studio, connect to a ROS 2 system, and inspect its
 
 ROS Studio is a development preview containing independent Visualizer, Tools, and Launcher processes in one product. Start with [build from source](contributing/building.md); signed macOS and Microsoft Store release paths still require qualification.
 
+For reusable product copy and application images, see
+[product description and screenshots](product/README.md).
+
 ## Start using the applications
 
 | Guide | Task |
