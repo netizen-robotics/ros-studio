@@ -11,6 +11,7 @@ spec.loader.exec_module(module)
 class ReleasePreflightTests(unittest.TestCase):
     def test_preview_needs_no_credentials(self):
         self.assertEqual(module.validate('macos-preview', {}), [])
+        self.assertEqual(module.validate('windows-setup', {}), [])
 
     def test_production_does_not_fall_back_to_preview(self):
         self.assertIn('Missing APPLE_DEVELOPER_ID_P12_BASE64', module.validate('macos-dmg', {}))

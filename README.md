@@ -4,7 +4,7 @@ Visualize ROS 2 data and inspect a running ROS graph from native desktop applica
 
 ROS Studio brings spatial visualization and ROS inspection into two focused workspaces, included in one ROS Studio installation. Use **Visualizer** to see your robot and sensor data. Use **Tools** to inspect messages, plot values, and work with topics, services, actions, nodes, and parameters.
 
-**Development preview:** build from source to try ROS Studio. Signed macOS suite packages and Windows Microsoft Store distribution are not yet qualified for public release. The primary tested development environment is macOS on Apple Silicon with ROS 2 Jazzy. Read the [platform status and known limitations](docs/reference/limitations.md) before use.
+**Development preview:** build from source or generate the [preview DMG, Windows setup and Ubuntu DEB](docs/contributing/release-ci.md#download-the-first-preview-packages) to try ROS Studio. Signed macOS suite packages and Windows Microsoft Store distribution are not yet qualified for public release. The primary tested development environment is macOS on Apple Silicon with ROS 2 Jazzy. Read the [platform status and known limitations](docs/reference/limitations.md) before use.
 
 ## Choose your workspace
 
@@ -39,7 +39,7 @@ Start ROS Studio through Launcher:
 scripts/dev cargo run --locked -p studio-launcher --bin studio-launcher
 ```
 
-Launcher is the suite entry point for opening the bundled Visualizer and Tools. Windows distribution targets Microsoft Store MSIX; macOS distribution targets one signed app in a DMG. These release packages still require qualification. Direct app launches remain available for development. The project environment supplies the development dependencies. See [build from source](docs/contributing/building.md) for prerequisites and Windows instructions, then follow [get started](docs/getting-started.md).
+Launcher is the suite entry point for opening the bundled Visualizer and Tools. Windows distribution offers an unsigned standalone setup preview and targets Microsoft Store MSIX; macOS distribution targets one signed app in a DMG. These release packages still require qualification. Direct app launches remain available for development. The project environment supplies the development dependencies. See [build from source](docs/contributing/building.md) for prerequisites and Windows instructions, then follow [get started](docs/getting-started.md).
 
 ## Learn and contribute
 

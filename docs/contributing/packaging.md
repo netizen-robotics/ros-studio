@@ -46,6 +46,20 @@ Initial macOS updates replace the complete app. No automatic updater is included
 Close all ROS Studio windows before replacing the app. Existing per-tool managed
 installations are not automatically migrated or deleted.
 
+## Windows 11 x64 — standalone preview setup
+
+The `windows-setup` release-candidate channel creates one unsigned, per-user
+Inno Setup EXE containing all three applications and a shared Jazzy runtime.
+It is an offline full-suite installer, separate from the retained legacy
+bootstrap. It creates a Start menu entry and supports removal through Windows
+Settings. No elevated helper or automatic firewall repair is included. The build
+uses the network crate's helper-free policy without Store frontend metadata.
+
+Use `scripts/package-suite-setup.py` on a Windows x64 host with Inno Setup 6.
+The package is a preview; code signing, complete dependency notice review,
+clean-machine installation and native/network qualification remain open.
+See [candidate downloads](release-ci.md#download-the-first-preview-packages).
+
 ## Windows 11 x64 — Microsoft Store MSIX
 
 Reserve the product in Partner Center and use its exact package identity name,

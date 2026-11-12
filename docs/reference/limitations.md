@@ -10,6 +10,10 @@ ROS Studio is a development preview. Build success and local tests do not establ
 | Windows 11 x64, ROS 2 Jazzy | Native development builds and selected application/ROS checks; full installation and direct-launch LAN qualification remain open |
 | Linux, Intel macOS, other ROS distributions | Dependency environments or selected feasibility work exist; full native application support is not qualified |
 
+An unsigned, per-user Windows setup preview is also available through the
+manual release-candidate workflow; CI installation checks do not establish
+clean-machine or native Windows 11 acceptance.
+
 The one-product release paths (Microsoft Store MSIX on Windows and signed/notarized app/DMG on macOS) still require qualification. Store identity reservation/certification, macOS signing, dependency notice review, clean-machine installation and update/uninstall remain incomplete. Store builds exclude elevated firewall repair; packaged localhost/LAN behavior remains unqualified. Legacy per-tool catalog/install code is retained in source but is not the active delivery path.
 
 ## ROS and display restrictions

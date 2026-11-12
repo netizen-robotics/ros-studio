@@ -12,6 +12,7 @@ on:
           - macos-preview
           - macos-dmg
           - microsoft-store
+          - windows-setup
           - ubuntu-check
           - ubuntu-deb
 permissions:
@@ -81,7 +82,7 @@ jobs:
     # Container packaging checks do not establish installed graphical UI acceptance.
   candidate:
     if: inputs.channel != 'ubuntu-check' && inputs.channel != 'ubuntu-deb'
-    runs-on: ${{ inputs.channel == 'microsoft-store' && 'windows-2022' || 'macos-15' }}
+    runs-on: ${{ inputs.channel == 'windows-setup' && 'windows-2025' || inputs.channel == 'microsoft-store' && 'windows-2022' || 'macos-15' }}
     environment: ${{ inputs.channel }}
     timeout-minutes: 120
     env:
@@ -120,7 +121,7 @@ jobs:
         if: runner.os == 'macOS'
         run: scripts/dev .pixi/envs/default/bin/python scripts/native.py --label release-candidate --profile release
       - name: Windows Store build and tests
-        if: runner.os == 'Windows'
+        if: inputs.channel == 'microsoft-store'
         shell: pwsh
         run: |
           New-Item artifacts/feasibility -ItemType Directory -Force | Out-Null
@@ -132,6 +133,35 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           pixi run --locked cargo test --locked --target x86_64-pc-windows-msvc -p studio-launcher --features store-distribution --all-targets 2>&1 | Tee-Object artifacts/feasibility/windows-release-tests.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Windows standalone suite build and tests
+        if: inputs.channel == 'windows-setup'
+        shell: pwsh
+        run: |
+          New-Item artifacts/feasibility -ItemType Directory -Force | Out-Null
+          $env:ROS_DISTRO = 'jazzy'
+          $env:AMENT_PREFIX_PATH = "$PWD/.pixi/envs/default/Library"
+          $env:CMAKE_PREFIX_PATH = $env:AMENT_PREFIX_PATH
+          $env:LIBCLANG_PATH = "$env:AMENT_PREFIX_PATH/bin"
+          # Reuse the helper-free network policy without Store package metadata.
+          pixi run --locked cargo build --locked --release --target x86_64-pc-windows-msvc -p studio-launcher -p studio-tools -p studio-visualizer -p studio-backend --features studio-network/store-distribution 2>&1 | Tee-Object artifacts/feasibility/windows-setup-build.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pixi run --locked cargo test --locked --target x86_64-pc-windows-msvc -p studio-launcher -p studio-tools -p studio-visualizer -p studio-backend --features studio-network/store-distribution 2>&1 | Tee-Object artifacts/feasibility/windows-setup-tests.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Windows setup layout regressions
+        if: inputs.channel == 'windows-setup'
+        run: pixi run --locked python scripts/test-setup-packaging.py
+      - name: Assemble unsigned Windows setup
+        if: inputs.channel == 'windows-setup'
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}/Inno Setup 6/ISCC.exe"
+          if (!(Test-Path $iscc)) { throw 'Inno Setup 6 is missing on this runner' }
+          pixi run --locked python scripts/package-suite-setup.py --runtime .pixi/envs/default/Library --binaries target/x86_64-pc-windows-msvc/release --destination artifacts/release-candidate --iscc "$iscc"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Test Windows setup installation and removal
+        if: inputs.channel == 'windows-setup'
+        shell: pwsh
+        run: scripts/test-setup-install.ps1 -PackageDir artifacts/release-candidate
       - name: Relocate macOS runtime
         if: runner.os == 'macOS'
         run: scripts/dev .pixi/envs/default/bin/python scripts/package-macos.py --distro jazzy --profile release --destination artifacts/release-runtime
@@ -156,7 +186,7 @@ jobs:
           fi
           scripts/dev .pixi/envs/default/bin/python scripts/package-suite-macos.py --runtime artifacts/release-runtime --binaries target/release --destination artifacts/release-candidate "${args[@]}"
       - name: Assemble Microsoft Store submission candidate
-        if: runner.os == 'Windows'
+        if: inputs.channel == 'microsoft-store'
         shell: pwsh
         run: |
           $sdk = Get-ChildItem "${env:ProgramFiles(x86)}/Windows Kits/10/bin/*/x64/makeappx.exe" | Sort-Object FullName -Descending | Select-Object -First 1
@@ -177,10 +207,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ros-studio-${{ inputs.channel }}-${{ github.sha }}
+          compression-level: 0
           retention-days: 14
           path: |
             artifacts/release-candidate/*.dmg
             artifacts/release-candidate/*.msix
+            artifacts/release-candidate/*-setup.exe
+            artifacts/release-candidate/SHA256SUMS
+            artifacts/release-candidate/payload.json
             artifacts/release-candidate/suite-package.json
             artifacts/feasibility/
             Cargo.lock

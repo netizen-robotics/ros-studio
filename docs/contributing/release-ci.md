@@ -15,6 +15,7 @@ Ubuntu is also available independently through the `ubuntu-check` channel below.
 | --- | --- | --- |
 | `macos-preview` | Ad-hoc ARM64 DMG for development evaluation | None |
 | `macos-dmg` | Developer ID signed and notarized ARM64 DMG | `macos-dmg` |
+| `windows-setup` | Unsigned per-user x64 setup EXE with the full offline suite | None |
 | `microsoft-store` | Unsigned x64 MSIX for Partner Center submission | `microsoft-store` |
 | `ubuntu-check` | Ubuntu 24.04 x64 build, unit-test, formatting and Clippy evidence | None |
 | `ubuntu-deb` | Experimental Ubuntu 24.04 amd64 DEB and install-test evidence | None |
@@ -26,6 +27,30 @@ records are retained even when checks fail. `ubuntu-check` produces evidence onl
 under `/opt/ros-studio`. It checks ELF dependencies and install, configuration,
 reinstall and purge in a clean Ubuntu container before uploading the DEB.
 These checks do not qualify graphical UI, LAN behavior or Ubuntu ARM64 support.
+
+## Download the first preview packages
+
+Run `macos-preview`, `windows-setup`, and `ubuntu-deb` against the same reviewed
+source commit. Download the corresponding artifacts from each run's Summary.
+These channels need no signing credentials and do not submit to either Store or
+publish a GitHub Release. The macOS preview is ad-hoc signed; the Windows setup
+is unsigned. Production `macos-dmg` retains its signing and reviewed-notice gates.
+
+The Windows setup uses Inno Setup 6 on `windows-2025`. It installs Launcher,
+Visualizer, Tools and one private Jazzy runtime into
+`%LOCALAPPDATA%/Programs/ROS Studio`, creates a Start menu entry and registers an
+uninstaller. It requests no administrator access and includes no firewall helper.
+Close every suite window before installing an update. Windows Settings → Apps →
+Installed apps removes the suite; workspaces and preferences are retained.
+The unsigned installer may display publisher/reputation warnings. Store
+certification and SignPath approval are separate from generating this installer.
+
+The Windows job verifies installation, payload hashes, executable linkage with
+build-environment paths removed, reinstall and uninstall on its disposable CI
+runner. This runner has developer tools installed: these checks do not establish
+clean-machine, graphical UI, Windows 11 client or LAN acceptance. Dependency
+notice review remains open across the preview packages. The setup artifact
+contains the EXE, SHA256SUMS, payload hashes and package metadata.
 
 ## Download and install the Ubuntu preview
 

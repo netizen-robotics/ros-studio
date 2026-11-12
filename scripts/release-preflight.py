@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def validate(channel, env):
     errors = []
-    if channel == 'macos-preview':
+    if channel in ('macos-preview', 'windows-setup'):
         return errors
     required = ['STUDIO_RELEASE_NOTICES', 'STUDIO_RELEASE_NOTICES_SHA256']
     if channel == 'macos-dmg':
@@ -40,7 +40,7 @@ def validate(channel, env):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('channel', choices=['macos-preview', 'macos-dmg', 'microsoft-store'])
+    parser.add_argument('channel', choices=['macos-preview', 'macos-dmg', 'microsoft-store', 'windows-setup'])
     errors = validate(parser.parse_args().channel, os.environ)
     for error in errors:
         print(error)
