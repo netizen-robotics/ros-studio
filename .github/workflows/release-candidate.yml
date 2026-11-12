@@ -11,6 +11,7 @@ on:
         options:
           - macos-preview
           - macos-dmg
+          - macos-signed-preview
           - microsoft-store
           - windows-setup
           - ubuntu-check
@@ -83,7 +84,7 @@ jobs:
   candidate:
     if: inputs.channel != 'ubuntu-check' && inputs.channel != 'ubuntu-deb'
     runs-on: ${{ inputs.channel == 'windows-setup' && 'windows-2025' || inputs.channel == 'microsoft-store' && 'windows-2022' || 'macos-15' }}
-    environment: ${{ inputs.channel }}
+    environment: ${{ inputs.channel == 'macos-signed-preview' && 'macos-dmg' || inputs.channel }}
     timeout-minutes: 120
     env:
       PIXI_CACHE_DIR: ${{ github.workspace }}/.cache/pixi
@@ -166,7 +167,7 @@ jobs:
         if: runner.os == 'macOS'
         run: scripts/dev .pixi/envs/default/bin/python scripts/package-macos.py --distro jazzy --profile release --destination artifacts/release-runtime
       - name: Prepare ephemeral signing keychain
-        if: inputs.channel == 'macos-dmg'
+        if: inputs.channel == 'macos-dmg' || inputs.channel == 'macos-signed-preview'
         env:
           APPLE_DEVELOPER_ID_P12_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_P12_BASE64 }}
           APPLE_DEVELOPER_ID_P12_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}
@@ -183,6 +184,8 @@ jobs:
           args=()
           if [[ "$RELEASE_CHANNEL" == macos-dmg ]]; then
             args+=(--sign-identity "$STUDIO_MACOS_SIGN_IDENTITY" --notary-profile ros-studio-ci --notices "$STUDIO_RELEASE_NOTICES")
+          elif [[ "$RELEASE_CHANNEL" == macos-signed-preview ]]; then
+            args+=(--sign-identity "$STUDIO_MACOS_SIGN_IDENTITY" --notary-profile ros-studio-ci --notices THIRD_PARTY_NOTICES.md --preview-signing)
           fi
           scripts/dev .pixi/envs/default/bin/python scripts/package-suite-macos.py --runtime artifacts/release-runtime --binaries target/release --destination artifacts/release-candidate "${args[@]}"
       - name: Assemble Microsoft Store submission candidate
@@ -194,7 +197,7 @@ jobs:
           pixi run --locked python scripts/package-suite-windows.py --runtime .pixi/envs/default/Library --binaries target/x86_64-pc-windows-msvc/release --destination artifacts/release-candidate --notices "$env:STUDIO_RELEASE_NOTICES" --makeappx "$($sdk.FullName)" --identity-name "$env:STUDIO_MSIX_IDENTITY_NAME" --publisher "$env:STUDIO_MSIX_PUBLISHER" --publisher-display-name "$env:STUDIO_MSIX_PUBLISHER_DISPLAY_NAME"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Remove ephemeral signing credentials
-        if: always() && inputs.channel == 'macos-dmg'
+        if: always() && (inputs.channel == 'macos-dmg' || inputs.channel == 'macos-signed-preview')
         run: bash scripts/ci-macos-signing.sh cleanup
       - name: Index evidence
         if: always()

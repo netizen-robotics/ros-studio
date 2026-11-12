@@ -28,6 +28,8 @@ def assemble(args):
         raise ValueError('Choose a new destination; preserve previous evidence')
     if args.notary_profile and not args.sign_identity:
         raise ValueError('Notarization requires Developer ID signing')
+    if args.preview_signing and not (args.sign_identity and args.notary_profile):
+        raise ValueError('Signed preview requires Developer ID signing and notarization')
     if args.sign_identity and not args.notices:
         raise ValueError('Release signing requires reviewed dependency notices')
     if args.notices and (not args.notices.is_file() or not args.notices.stat().st_size):
@@ -128,7 +130,7 @@ def assemble(args):
         run('xcrun', 'notarytool', 'submit', dmg, '--keychain-profile', args.notary_profile, '--wait')
         run('xcrun', 'stapler', 'staple', dmg)
     record = {'product': 'ROS Studio', 'version': version, 'applications': list(ROLES[:3]),
-              'status': 'signed/notarized; clean-machine qualification pending' if args.notary_profile else 'experimental/ad-hoc; not qualified for public distribution',
+              'status': ('signed/notarized preview; dependency license review and clean-machine qualification pending' if args.preview_signing else 'signed/notarized; clean-machine qualification pending') if args.notary_profile else 'experimental/ad-hoc; not qualified for public distribution',
               'artifact': str(dmg), 'sha256': hashlib.file_digest(dmg.open('rb'), 'sha256').hexdigest(),
               'binaries': {role: hashlib.sha256((macos / f'studio-{role}' if role in ('launcher', 'backend') else bundle / f'Contents/Applications/ROS Studio {role.title()}.app/Contents/MacOS/studio-{role}').read_bytes()).hexdigest() for role in ROLES}}
     (args.destination / 'suite-package.json').write_text(json.dumps(record, indent=2) + '\n')
@@ -143,6 +145,8 @@ def main():
     parser.add_argument('--notices', type=Path)
     parser.add_argument('--sign-identity')
     parser.add_argument('--notary-profile')
+    parser.add_argument('--preview-signing', action='store_true',
+                        help='Explicit signed preview with assembled notices; does not establish completed dependency license review')
     try:
         assemble(parser.parse_args())
     except (ValueError, OSError, subprocess.CalledProcessError) as e:

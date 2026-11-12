@@ -2,7 +2,8 @@
 
 Windows preview setup installers are currently unsigned. SignPath Foundation
 code signing is being requested; no SignPath signature or approval is claimed.
-macOS development previews are ad-hoc signed. The Developer ID release channel
+macOS previews have separate ad-hoc and Developer ID signed/notarized channels.
+Signed previews still identify open dependency license qualification. The production Developer ID release channel
 requires signing credentials, notarization and reviewed dependency notices.
 
 ROS Studio source and build scripts are maintained in the

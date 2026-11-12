@@ -12,8 +12,8 @@ def validate(channel, env):
     errors = []
     if channel in ('macos-preview', 'windows-setup'):
         return errors
-    required = ['STUDIO_RELEASE_NOTICES', 'STUDIO_RELEASE_NOTICES_SHA256']
-    if channel == 'macos-dmg':
+    required = [] if channel == 'macos-signed-preview' else ['STUDIO_RELEASE_NOTICES', 'STUDIO_RELEASE_NOTICES_SHA256']
+    if channel in ('macos-dmg', 'macos-signed-preview'):
         required += ['APPLE_DEVELOPER_ID_P12_BASE64', 'APPLE_DEVELOPER_ID_P12_PASSWORD',
                      'APPLE_API_PRIVATE_KEY', 'APPLE_API_KEY_ID', 'APPLE_API_ISSUER_ID',
                      'STUDIO_MACOS_SIGN_IDENTITY']
@@ -23,7 +23,7 @@ def validate(channel, env):
     else:
         return ['Unsupported release channel']
     errors += [f'Missing {name}' for name in required if not env.get(name, '').strip()]
-    if channel == 'macos-dmg' and env.get('STUDIO_MACOS_SIGN_IDENTITY') and not env['STUDIO_MACOS_SIGN_IDENTITY'].startswith('Developer ID Application: '):
+    if channel in ('macos-dmg', 'macos-signed-preview') and env.get('STUDIO_MACOS_SIGN_IDENTITY') and not env['STUDIO_MACOS_SIGN_IDENTITY'].startswith('Developer ID Application: '):
         errors.append('DMG signing requires Developer ID Application, not Mac App Distribution')
     if env.get('STUDIO_RELEASE_NOTICES'):
         path = (ROOT / env['STUDIO_RELEASE_NOTICES']).resolve()
@@ -40,7 +40,7 @@ def validate(channel, env):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('channel', choices=['macos-preview', 'macos-dmg', 'microsoft-store', 'windows-setup'])
+    parser.add_argument('channel', choices=['macos-preview', 'macos-dmg', 'microsoft-store', 'windows-setup', 'macos-signed-preview'])
     errors = validate(parser.parse_args().channel, os.environ)
     for error in errors:
         print(error)

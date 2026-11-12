@@ -15,6 +15,7 @@ Ubuntu is also available independently through the `ubuntu-check` channel below.
 | --- | --- | --- |
 | `macos-preview` | Ad-hoc ARM64 DMG for development evaluation | None |
 | `macos-dmg` | Developer ID signed and notarized ARM64 DMG | `macos-dmg` |
+| `macos-signed-preview` | Developer ID signed/notarized ARM64 preview; dependency license review open | `macos-dmg` |
 | `windows-setup` | Unsigned per-user x64 setup EXE with the full offline suite | None |
 | `microsoft-store` | Unsigned x64 MSIX for Partner Center submission | `microsoft-store` |
 | `ubuntu-check` | Ubuntu 24.04 x64 build, unit-test, formatting and Clippy evidence | None |
@@ -35,6 +36,14 @@ source commit. Download the corresponding artifacts from each run's Summary.
 These channels need no signing credentials and do not submit to either Store or
 publish a GitHub Release. The macOS preview is ad-hoc signed; the Windows setup
 is unsigned. Production `macos-dmg` retains its signing and reviewed-notice gates.
+
+When Apple credentials are configured, use `macos-signed-preview` instead of
+`macos-preview` to sign and notarize an explicitly labelled preview. It uses the
+protected `macos-dmg` environment, requires all Apple signing credentials and
+never falls back to ad-hoc signing. It includes the source notices and available
+cached native license texts; complete dependency redistribution review remains
+open and is recorded in package metadata. This channel does not satisfy the
+production channel's reviewed-notice requirement.
 
 The Windows setup uses Inno Setup 6 on `windows-2025`. It installs Launcher,
 Visualizer, Tools and one private Jazzy runtime into

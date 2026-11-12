@@ -41,6 +41,18 @@ for lib in (PREFIX/'lib').glob('*.dylib'):
 shutil.copytree(PREFIX/'conda-meta', DEST/'dependency-metadata')
 shutil.copytree(ROOT/'crates/visualization/notices', DEST/'notices/visualization')
 shutil.copytree(ROOT/'crates/backend/notices/ros-interfaces', DEST/'notices/ros-interfaces')
+# Include available cached native license texts without attesting completeness.
+notice_inventory = []
+for metadata in sorted((PREFIX/'conda-meta').glob('*.json')):
+    record = json.loads(metadata.read_text())
+    source = Path(record.get('link', {}).get('source', ''))/'info/licenses'
+    present = source.is_dir() and any(p.is_file() for p in source.rglob('*'))
+    if present:
+        shutil.copytree(source, DEST/'notices/runtime'/metadata.stem)
+    notice_inventory.append({'package': metadata.stem, 'cached_license_texts': bool(present)})
+(DEST/'notices/runtime-license-inventory.json').write_text(json.dumps({
+    'scope': 'Available cached native notices; not a completed redistribution or Rust dependency license review',
+    'packages': notice_inventory}, indent=2)+'\n')
 files = list((DEST/'lib').glob('*.dylib')) + list((DEST/'bin').iterdir())
 for file in files:
     dependencies = subprocess.check_output(['otool','-L',str(file)],text=True).splitlines()[1:]

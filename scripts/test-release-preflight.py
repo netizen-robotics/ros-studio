@@ -17,6 +17,12 @@ class ReleasePreflightTests(unittest.TestCase):
         self.assertIn('Missing APPLE_DEVELOPER_ID_P12_BASE64', module.validate('macos-dmg', {}))
         self.assertIn('Missing STUDIO_MSIX_PUBLISHER', module.validate('microsoft-store', {}))
 
+    def test_signed_preview_requires_all_signing_inputs_but_not_review_attestation(self):
+        errors = module.validate('macos-signed-preview', {})
+        self.assertIn('Missing APPLE_API_PRIVATE_KEY', errors)
+        self.assertNotIn('Missing STUDIO_RELEASE_NOTICES', errors)
+        self.assertIn('Missing STUDIO_RELEASE_NOTICES', module.validate('macos-dmg', {}))
+
     def test_store_certificate_rejected_for_dmg_without_disclosing_value(self):
         errors = module.validate('macos-dmg', {'STUDIO_MACOS_SIGN_IDENTITY': '3rd Party Mac Developer Application: sentinel-sensitive-value'})
         self.assertTrue(any('requires Developer ID' in e for e in errors))
