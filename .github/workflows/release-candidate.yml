@@ -146,7 +146,19 @@ jobs:
           # Reuse the helper-free network policy without Store package metadata.
           pixi run --locked cargo build --locked --release --target x86_64-pc-windows-msvc -p studio-launcher -p studio-tools -p studio-visualizer -p studio-backend --features studio-network/store-distribution 2>&1 | Tee-Object artifacts/feasibility/windows-setup-build.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          pixi run --locked cargo test --locked --target x86_64-pc-windows-msvc -p studio-launcher -p studio-tools -p studio-visualizer -p studio-backend --features studio-network/store-distribution 2>&1 | Tee-Object artifacts/feasibility/windows-setup-tests.log
+          pixi run --locked cargo test --locked --release --target x86_64-pc-windows-msvc -p studio-launcher -p studio-tools -p studio-visualizer -p studio-backend --features studio-network/store-distribution 2>&1 | Tee-Object artifacts/feasibility/windows-setup-tests.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Windows Visualizer format and Clippy
+        if: inputs.channel == 'windows-setup'
+        shell: pwsh
+        run: |
+          $env:ROS_DISTRO = 'jazzy'
+          $env:AMENT_PREFIX_PATH = "$PWD/.pixi/envs/default/Library"
+          $env:CMAKE_PREFIX_PATH = $env:AMENT_PREFIX_PATH
+          $env:LIBCLANG_PATH = "$env:AMENT_PREFIX_PATH/bin"
+          pixi run --locked cargo fmt --all -- --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pixi run --locked cargo clippy --locked --release --target x86_64-pc-windows-msvc -p studio-visualizer --all-targets --features studio-network/store-distribution -- -D warnings 2>&1 | Tee-Object artifacts/feasibility/windows-setup-clippy.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Windows setup layout regressions
         if: inputs.channel == 'windows-setup'

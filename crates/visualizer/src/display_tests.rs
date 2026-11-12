@@ -768,8 +768,11 @@ fn image_fit_uses_bounded_companion_without_resizing_the_scene() {
             .1
             .bounds()
             .unwrap();
+        // Platform font metrics can shift this bounded dock by a fraction of a
+        // logical pixel. Keep the minimum-size regression with one pixel of
+        // layout tolerance, rather than requiring identical glyph geometry.
         assert!(
-            image.y1 - image.y0 >= if size[1] < 700. { 32. } else { 48. },
+            image.y1 - image.y0 + 1.0 >= if size[1] < 700. { 32. } else { 48. },
             "Image Fit must use its viewport: {image:?}"
         );
         assert_eq!(scene_rect(&output), initial);
