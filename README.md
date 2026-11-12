@@ -54,4 +54,8 @@ ROS Studio is experimental. Review requests and target systems before enabling i
 
 ## License
 
+See the [Code signing policy](docs/contributing/code-signing-policy.md) for
+current signature status, and [privacy and network behavior](docs/reference/privacy.md)
+for how the bundled applications handle local and ROS data.
+
 ROS Studio's original code and documentation are licensed under [MIT](LICENSE). Third-party components retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.md).
